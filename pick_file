@@ -1,0 +1,46 @@
+#!/bin/bash
+
+## Pick files from another branch
+
+function print_help {
+  echo "This script picks files and folders from a different git branch."
+  echo "Usage examples for ssh connections:"
+  echo -e "\t$(basename $0) -b/--branch rem_branch [-f/--file file_or_folder]"
+  echo ""
+  echo "Options"
+  echo -e "\t-b/--branch -> remote branch"
+  echo -e "\t-f/--file ---> file to pick"
+}
+
+
+while getopts "hb:f:-:" opt; do
+  case ${opt} in
+    h)
+      print_help
+      exit 0
+      ;;
+    b)
+      branch="${OPTARG}"
+      ;;
+    f)
+      file="${OPTARG}"
+      ;;
+    -)
+      case ${OPTARG} in
+        file)
+          file="${!OPTIND}"
+          OPTIND=$(( $OPTIND + 1 ))
+          ;;
+        branch)
+          branch="${!OPTIND}"
+          OPTIND=$(( $OPTIND + 1 ))
+          ;;
+        help)
+          print_help
+          exit 0
+          ;;
+      esac
+   esac
+done
+
+git checkout ${branch} ${file}
