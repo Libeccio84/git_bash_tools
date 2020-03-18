@@ -1,0 +1,59 @@
+#!/bin/bash
+
+## Shows cross-branch differences for a gien file
+
+function print_help {
+  echo "This script compares files and folders from different git branches."
+  echo "Usage examples for ssh connections:"
+  echo -e "\t$(basename $0) [-b/--branch/--branches rem_branch1:rem_branch2] [-f/--file file_or_folder]"
+  echo ""
+  echo "Options"
+  echo -e "\t-b/--branch/--branches -> remote branches separated by colon; by default is \"master:devel\""
+  echo -e "\t-f/--file ---> file to pick"
+}
+
+
+branches="master:devel"
+
+while getopts "hb:f:-:" opt; do
+  case ${opt} in
+    h)
+      print_help
+      exit 0
+      ;;
+    b)
+      branches="${OPTARG}"
+      ;;
+    f)
+      file="${OPTARG}"
+      ;;
+    -)
+      case ${OPTARG} in
+        file)
+          file="${!OPTIND}"
+          OPTIND=$(( $OPTIND + 1 ))
+          ;;
+        branch|branches)
+          branches="${!OPTIND}"
+          OPTIND=$(( $OPTIND + 1 ))
+          ;;
+        help)
+          print_help
+          exit 0
+          ;;
+      esac
+   esac
+done
+
+bsource="${branches%:*}"
+bremote="${branches#*:}"
+
+echo "____________________________________________"
+echo ""
+echo "In the following: "
+echo -e "\t-\"a\" branch == ${bsource}"
+echo -e "\t-\"b\" branch == ${bremote}"
+echo ""
+echo "============================================"
+echo ""
+git diff ${bsource}:${file} ${bremote}:${file}
