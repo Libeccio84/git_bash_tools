@@ -78,10 +78,12 @@ if [ -z "$1" ]; then
 else
   if [ "${update_tag}" == "true" ]; then
     git tag | grep ${tag_name} &> /dev/null
+    new_tag="false"
     if [ "$?" -eq 0 ]; then
       git tag --force ${tag_name}
     else
       git tag ${tag_name}
+      new_tag="true"
     fi
   elif [ "${rename_tag}" == "true" ]; then
     git tag ${new_tag} ${old_tag}
@@ -90,6 +92,7 @@ else
     git tag -d ${tag_name}
   else
     git tag ${tag_name}
+    new_tag="true"
   fi
 
   if [ "$?" -eq 0 ]; then
@@ -108,21 +111,22 @@ else
         read -p "Type y or n: " ans
       fi
     done
+    
+    if [ ${new_tag} == "false" ]; then
+      if [ "${delete_tag}" == "true" -o "${update_tag}" == "true" ]; then
+        tag_to_remove="${tag_name}"
+      elif [ "${rename_tag}" == "true" ]; then
+        tag_to_remove="${old_tag}"
+      fi
 
-    if [ "${delete_tag}" == "true" -o "${update_tag}" == "true" ]; then
-      tag_to_remove="${tag_name}"
-    elif [ "${rename_tag}" == "true" ]; then
-      tag_to_remove="${old_tag}"
+      if ! git push --delete origin "${tag_to_remove}"; then
+        echo "Error while deleting '${tag_to_remove}' from origin."
+        echo "Try again manually via"
+        echo "  git push --delete origin '${tag_to_remove}'"
+        echo ""
+        exit 1
+      fi
     fi
-
-    if ! git push --delete origin "${tag_to_remove}"; then
-      echo "Error while deleting '${tag_to_remove}' from origin."
-      echo "Try again manually via"
-      echo "  git push --delete origin '${tag_to_remove}'"
-      echo ""
-      exit 1
-    fi
-
     if ! git push --tags; then
       echo "Error while pushing tags."
       echo "Try again manually via"
