@@ -1,5 +1,4 @@
 #!/bin/bash
-
 ## Tag handling script
 
 function print_help {
@@ -101,8 +100,6 @@ else
       if [[ $ans =~ ^([yY][eE][sS]|[yY])$ ]] || [ -z "$ans" ]; then
         ans="y"
         resp="given"
-        git push --delete origin ${tag_name}
-        exit $?
       elif [[ $ans =~ ^([nN][oO]|[nN])$ ]]; then
         ans="n"
         resp="given"
@@ -111,7 +108,7 @@ else
         read -p "Type y or n: " ans
       fi
     done
-    
+
     if [ ${new_tag} == "false" ]; then
       if [ "${delete_tag}" == "true" -o "${update_tag}" == "true" ]; then
         tag_to_remove="${tag_name}"
