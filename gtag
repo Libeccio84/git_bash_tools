@@ -48,7 +48,7 @@ while getopts "hu:r:d:-:" opt; do
           OPTIND=$(( $OPTIND + 1 ))
           ;;
         delete)
-          update_tag="true"
+          delete_tag="true"
           tag_name="${!OPTIND}"
           OPTIND=$(( $OPTIND + 1 ))
           ;;
@@ -77,21 +77,23 @@ if [ -z "$1" ]; then
 else
   if [ "${update_tag}" == "true" ]; then
     git tag | grep ${tag_name} &> /dev/null
-    new_tag="false"
+    modify_old_tags="true"
     if [ "$?" -eq 0 ]; then
       git tag --force ${tag_name}
     else
       git tag ${tag_name}
-      new_tag="true"
+      modify_old_tags="false"
     fi
   elif [ "${rename_tag}" == "true" ]; then
     git tag ${new_tag} ${old_tag}
     git tag -d ${old_tag}
+    modify_old_tags="true"
   elif [ "${delete_tag}" == "true" ]; then
     git tag -d ${tag_name}
+    modify_old_tags="true"
   else
     git tag ${tag_name}
-    new_tag="true"
+    modify_old_tags="false"
   fi
 
   if [ "$?" -eq 0 ]; then
@@ -109,7 +111,7 @@ else
       fi
     done
 
-    if [ ${new_tag} == "false" ]; then
+    if [ "${modify_old_tags}" == "true" ]; then
       if [ "${delete_tag}" == "true" -o "${update_tag}" == "true" ]; then
         tag_to_remove="${tag_name}"
       elif [ "${rename_tag}" == "true" ]; then
